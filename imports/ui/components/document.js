@@ -1,5 +1,6 @@
 import React from 'react'
 import { base64ToBlob } from '../../modules/base64-to-blob'
+import { removeDocument } from '../../api/documents/methods'
 import fileSaver from 'file-saver'
 import InlineCss from 'react-inline-css'
 import { Button, ListGroupItem } from 'react-bootstrap'
@@ -18,14 +19,28 @@ const downloadPDF = (event) => {
     } else {
       const blob = base64ToBlob(response.fileName)
       fileSaver.saveAs(blob, response.fileName)
-      target.innerHTML = "Download"
+      target.innerHTML = 'Download'
       target.classList.remove('downloading')
     }
   })
 }
 
+const handleRemoveDocument = (event) => {
+  event.preventDefault()
+  const documentId = event.target.getAttribute('data-id')
+  removeDocument.call({
+    _id: documentId,
+  }, (error) => {
+    if (error) {
+      Bert.alert(error.reason, 'danger')
+    } else {
+      Bert.alert('Document Removed!', 'success')
+    }
+  })
+}
+
 export const Document = ({ document }) => (
-  <InlineCss stylsheet={`
+  <InlineCss stylesheet={`
     .Document {
     font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
     }
@@ -46,12 +61,12 @@ export const Document = ({ document }) => (
     margin-top: 10px;
     margin-bottom: 0px;
     font-size: 18px;
-      }
+    }
     }
   `}>
     <ListGroupItem className="Document">
       <Button data-id={ document._id } onClick={ downloadPDF } bsStyle="success">Download</Button>
-      <Button data-id={ document._id } onClick={ removeDocument } bsStyle="danger">Remove</Button>
+      <Button data-id={ document._id } onClick={ handleRemoveDocument } bsStyle="danger">Remove</Button>
       <hr/>
       <h3>{ document.title }</h3>
       <p>{ document.body }</p>
@@ -60,5 +75,5 @@ export const Document = ({ document }) => (
 )
 
 Document.propTypes = {
-  docuemnt: React.PropTypes.object.isRequired,
+  document: React.PropTypes.object.isRequired,
 }
